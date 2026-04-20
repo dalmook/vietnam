@@ -1,0 +1,63 @@
+import type { ErrorInfo, ReactNode } from "react";
+import { Component } from "react";
+
+interface AppErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface AppErrorBoundaryState {
+  hasError: boolean;
+  message?: string;
+}
+
+export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+  state: AppErrorBoundaryState = {
+    hasError: false,
+    message: undefined
+  };
+
+  static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
+    return {
+      hasError: true,
+      message: error.message
+    };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("App crashed", error, info);
+  }
+
+  handleReload = () => {
+    window.location.href = import.meta.env.BASE_URL;
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="safe-pb min-h-screen bg-shell px-4 pb-24 pt-6">
+          <section className="rounded-[30px] bg-white p-6 shadow-soft">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral">Runtime Error</p>
+            <h1 className="mt-2 text-2xl font-bold text-ink">앱 실행 중 문제가 발생했습니다.</h1>
+            <p className="mt-3 text-sm leading-6 text-ink/70">
+              일부 기능(PDF / 음성 / 저장소) 실패가 발생해도 앱 전체가 멈추지 않도록 복구 화면을 표시합니다.
+            </p>
+            {this.state.message ? (
+              <pre className="mt-4 overflow-auto rounded-2xl bg-shell p-4 text-left text-xs text-ink/75">
+                {this.state.message}
+              </pre>
+            ) : null}
+            <button
+              type="button"
+              onClick={this.handleReload}
+              className="mt-5 rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white"
+            >
+              홈으로 복구
+            </button>
+          </section>
+        </main>
+      );
+    }
+
+    return this.props.children;
+  }
+}
