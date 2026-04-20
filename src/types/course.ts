@@ -30,6 +30,8 @@ export interface CourseProgress {
   completedLessons: number;
   totalLessons: number;
   lastStudiedAt?: string;
+  currentLessonId?: string;
+  completedLessonIds?: string[];
 }
 
 export interface CourseViewModel extends CourseManifest {
@@ -37,4 +39,45 @@ export interface CourseViewModel extends CourseManifest {
   isCompleted: boolean;
   isAvailable: boolean;
   lastStudiedAt?: string;
+}
+
+export interface LessonListItem {
+  id: string;
+  chapterId: string;
+  order: number;
+  title: string;
+  coreTopic: string;
+  representativeSentence: string;
+  cardsCount: number;
+  canListen: boolean;
+  canQuiz: boolean;
+  completionRate: number;
+  isLocked: boolean;
+  isCompleted: boolean;
+  status: "locked" | "available" | "in_progress" | "completed";
+}
+
+export interface ChapterListItem {
+  id: string;
+  order: number;
+  title: string;
+  description: string;
+  completionRate: number;
+  completedLessons: number;
+  totalLessons: number;
+  isUnlocked: boolean;
+  lessons: LessonListItem[];
+}
+
+export interface CourseDetailViewModel extends CourseViewModel {
+  chapterCount: number;
+  lessonCount: number;
+  totalCards: number;
+  chapters: ChapterListItem[];
+  currentLesson?: LessonListItem;
+  nextLesson?: LessonListItem;
+  reviewLesson?: LessonListItem;
+  continueLesson?: LessonListItem;
+  completedLessons: number;
+  estimatedHoursText: string;
 }

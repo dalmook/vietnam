@@ -2,7 +2,9 @@ import { NavLink } from "react-router-dom";
 
 const tabs = [
   { to: "/", label: "홈" },
-  { to: "/library", label: "코스" }
+  { to: "/review", label: "복습" },
+  { to: "/library", label: "코스" },
+  { to: "/settings", label: "설정" }
 ];
 
 export function BottomTabBar() {

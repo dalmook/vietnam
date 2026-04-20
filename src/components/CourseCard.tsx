@@ -3,6 +3,7 @@ import type { CourseViewModel } from "../types/course";
 interface CourseCardProps {
   course: CourseViewModel;
   compact?: boolean;
+  actionLabel?: string;
 }
 
 const themeClassMap: Record<CourseViewModel["coverTheme"], string> = {
@@ -21,7 +22,7 @@ const levelClassMap: Record<CourseViewModel["level"], string> = {
   Advanced: "bg-white/80 text-indigo-700"
 };
 
-export function CourseCard({ course, compact = false }: CourseCardProps) {
+export function CourseCard({ course, compact = false, actionLabel }: CourseCardProps) {
   return (
     <article
       className={`overflow-hidden rounded-[28px] bg-white shadow-soft ${
@@ -76,6 +77,12 @@ export function CourseCard({ course, compact = false }: CourseCardProps) {
             style={{ width: `${Math.round(course.completionRate * 100)}%` }}
           />
         </div>
+
+        {actionLabel && (
+          <div className="rounded-2xl bg-ink px-4 py-3 text-center text-sm font-semibold text-white">
+            {actionLabel}
+          </div>
+        )}
       </div>
     </article>
   );

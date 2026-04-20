@@ -3,13 +3,13 @@ import { CourseCard } from "../components/CourseCard";
 import { useCourseLibrary } from "../hooks/useCourseLibrary";
 
 export function HomePage() {
-  const { isReady, continueCourse, recommendedCourses, courses, completedCount, totalCount } =
+  const { isReady, error, continueCourse, continueLessonId, recentCourses, recommendedCourses, courses, completedCount, totalCount, rewards } =
     useCourseLibrary();
 
   if (!isReady) {
     return (
       <section className="rounded-[28px] bg-white p-6 text-center shadow-soft">
-        <p className="text-lg font-semibold text-ink">코스 라이브러리를 불러오는 중...</p>
+        <p className="text-lg font-semibold text-ink">홈 화면을 준비하고 있습니다.</p>
       </section>
     );
   }
@@ -22,49 +22,73 @@ export function HomePage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Continue</p>
-            <h2 className="display-font mt-2 text-3xl font-bold leading-tight text-ink">
-              다음에 할 것이 바로 보이게
-            </h2>
+            <h2 className="display-font mt-2 text-3xl font-bold leading-tight text-ink">앱을 다시 켜도 이어집니다</h2>
             <p className="mt-3 text-sm leading-6 text-ink/68">
-              이어하기는 가장 먼저 진행할 코스를 가리킵니다. 아직 시작한 기록이 없으면 첫 코스를
-              기본 시작점으로 안내합니다.
+              마지막으로 학습한 코스와 최근 진행 상태를 로컬에 저장해 두었습니다.
             </p>
           </div>
           <div className="rounded-[22px] bg-shell px-4 py-3 text-center">
-            <p className="text-xs font-medium text-ink/45">완료 코스</p>
-            <p className="mt-1 text-2xl font-bold text-ink">
-              {completedCount}
-              <span className="text-sm font-medium text-ink/45">/{totalCount}</span>
+            <p className="text-xs font-medium text-ink/45">XP / streak</p>
+            <p className="mt-1 text-lg font-bold text-ink">
+              {rewards.totalXp}
+              <span className="ml-1 text-sm font-medium text-ink/45">xp</span>
             </p>
+            <p className="mt-1 text-sm font-semibold text-ocean">{rewards.streak}일 연속</p>
           </div>
         </div>
 
-        {continueCourse && (
+        {continueCourse ? (
           <div className="mt-5">
-            <CourseCard course={continueCourse} />
+            <CourseCard course={continueCourse} actionLabel="이어하기" />
             <div className="mt-4 flex gap-3">
               <Link
-                to="/library"
+                to={continueLessonId ? `/course/${continueCourse.id}/lesson/${continueLessonId}` : `/course/${continueCourse.id}`}
                 className="flex-1 rounded-2xl bg-ink px-4 py-4 text-center text-base font-semibold text-white"
               >
                 이어하기
               </Link>
               <Link
-                to="/library"
+                to="/review"
                 className="rounded-2xl bg-sand px-4 py-4 text-center text-base font-semibold text-ink"
               >
-                전체 코스
+                복습 보기
               </Link>
             </div>
           </div>
+        ) : (
+          <p className="mt-5 text-sm leading-6 text-ink/60">아직 저장된 이어하기 코스가 없습니다.</p>
         )}
       </section>
 
       <section className="rounded-[30px] bg-white p-5 shadow-soft">
         <div className="flex items-center justify-between">
           <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Recent</p>
+            <h2 className="display-font mt-1 text-2xl font-bold text-ink">최근 학습</h2>
+          </div>
+          <div className="rounded-full bg-shell px-3 py-1 text-xs font-semibold text-ink/60">
+            완료 {completedCount}/{totalCount}
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {recentCourses.length > 0 ? (
+            recentCourses.map((course) => (
+              <Link key={course.id} to={`/course/${course.id}`} className="block">
+                <CourseCard course={course} compact actionLabel="다시 열기" />
+              </Link>
+            ))
+          ) : (
+            <p className="text-sm leading-6 text-ink/60">최근 학습 기록이 아직 없습니다.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-[30px] bg-white p-5 shadow-soft">
+        <div className="flex items-center justify-between">
+          <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Recommended</p>
-            <h2 className="display-font mt-1 text-2xl font-bold text-ink">오늘의 추천</h2>
+            <h2 className="display-font mt-1 text-2xl font-bold text-ink">추천 코스</h2>
           </div>
           <Link to="/library" className="text-sm font-semibold text-coral">
             모두 보기
@@ -73,7 +97,9 @@ export function HomePage() {
 
         <div className="mt-4 space-y-3">
           {recommendedCourses.map((course) => (
-            <CourseCard key={course.id} course={course} compact />
+            <Link key={course.id} to={`/course/${course.id}`} className="block">
+              <CourseCard course={course} compact actionLabel="코스 열기" />
+            </Link>
           ))}
         </div>
       </section>
@@ -89,9 +115,13 @@ export function HomePage() {
           </span>
         </div>
 
+        {error && <p className="mt-3 text-sm text-coral">{error}</p>}
+
         <div className="mt-4 grid gap-3">
           {previewCourses.map((course) => (
-            <CourseCard key={course.id} course={course} compact />
+            <Link key={course.id} to={`/course/${course.id}`} className="block">
+              <CourseCard course={course} compact actionLabel="코스 보기" />
+            </Link>
           ))}
         </div>
       </section>

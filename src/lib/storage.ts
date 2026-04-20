@@ -6,10 +6,13 @@ const STORE_NAME = "progress";
 const KEY = "course-progress";
 
 const getDatabase = () =>
-  openDB(DB_NAME, 1, {
+  openDB(DB_NAME, 2, {
     upgrade(database) {
       if (!database.objectStoreNames.contains(STORE_NAME)) {
         database.createObjectStore(STORE_NAME);
+      }
+      if (!database.objectStoreNames.contains("extractions")) {
+        database.createObjectStore("extractions");
       }
     }
   });
