@@ -18,7 +18,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--body-bg, transparent);
+  background:
+    radial-gradient(circle at top, rgba(161, 240, 216, 0.5), transparent 28%),
+    linear-gradient(180deg, #fffdf8 0%, #f2f7ff 100%);
 }
 
 * {
