@@ -1,9 +1,19 @@
 import { Outlet } from "react-router-dom";
+import { useRuntimeFeatureFlags } from "../hooks/useRuntimeFeatureFlags";
 import { BottomTabBar } from "./BottomTabBar";
 
 export function AppShell() {
+  const { hasWarning, message } = useRuntimeFeatureFlags();
+
   return (
     <main className="safe-pb min-h-screen bg-shell px-4 pb-24 pt-4">
+      {hasWarning ? (
+        <section className="mb-3 rounded-2xl border border-coral/30 bg-white px-4 py-3 shadow-soft">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral">Runtime Warning</p>
+          <p className="mt-1 text-sm text-ink/75">{message}</p>
+        </section>
+      ) : null}
+
       <header className="overflow-hidden rounded-[32px] bg-ink px-5 py-6 text-white shadow-soft">
         <div className="bg-[radial-gradient(circle_at_top_right,_rgba(255,215,114,0.22),_transparent_28%)]">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-mint">Vietnam Flow</p>

@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
+import { RouteErrorFallback } from "./components/RouteErrorFallback";
 import { CourseDetailPage } from "./pages/CourseDetailPage";
 import { ExtractionDebugPage } from "./pages/ExtractionDebugPage";
 import { HomePage } from "./pages/HomePage";
@@ -13,6 +14,7 @@ export const router = createBrowserRouter(
     {
       path: "/",
       element: <AppShell />,
+      errorElement: <RouteErrorFallback />,
       children: [
         {
           index: true,
