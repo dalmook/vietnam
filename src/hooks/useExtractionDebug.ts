@@ -6,6 +6,23 @@ import type { ExtractedCourseDocument, ExtractionStatus } from "../types/extract
 
 type ExtractionMap = Record<string, ExtractedCourseDocument>;
 
+const ensureDebugShape = (document: ExtractedCourseDocument): ExtractedCourseDocument => ({
+  ...document,
+  debug: {
+    repeatedLineCandidates: document.debug?.repeatedLineCandidates ?? [],
+    droppedLineCount: document.debug?.droppedLineCount ?? 0,
+    sectionCount: document.debug?.sectionCount ?? 0,
+    lessonCount: document.debug?.lessonCount ?? 0,
+    lowTextDensity: document.debug?.lowTextDensity ?? true,
+    fallbackApplied: document.debug?.fallbackApplied ?? false,
+    pageTypeClassification: document.debug?.pageTypeClassification ?? [],
+    vietnameseCandidateLines: document.debug?.vietnameseCandidateLines ?? [],
+    attachedTranslationLines: document.debug?.attachedTranslationLines ?? [],
+    excludedNoiseLines: document.debug?.excludedNoiseLines ?? [],
+    finalLearningCards: document.debug?.finalLearningCards ?? []
+  }
+});
+
 export function useExtractionDebug() {
   const [documents, setDocuments] = useState<ExtractionMap>({});
   const [statusMap, setStatusMap] = useState<Record<string, ExtractionStatus>>({});
@@ -29,7 +46,7 @@ export function useExtractionDebug() {
 
       loadedEntries.forEach(([courseId, document]) => {
         if (document) {
-          nextDocuments[courseId] = document;
+          nextDocuments[courseId] = ensureDebugShape(document);
           nextStatusMap[courseId] = document.status;
         } else {
           nextStatusMap[courseId] = "idle";
@@ -68,7 +85,7 @@ export function useExtractionDebug() {
 
     setStatusMap((current) => ({ ...current, [courseId]: "loading" }));
 
-    const document = await extractEmbeddedPdf(source);
+    const document = ensureDebugShape(await extractEmbeddedPdf(source));
     await saveExtractedDocument(document);
 
     setDocuments((current) => ({

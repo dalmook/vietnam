@@ -2,6 +2,7 @@ import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { buildLearningCards, buildLessonDrafts, buildSectionsFromPages } from "../lib/cardSegmentation";
 import { cleanExtractedPages } from "../lib/textCleanup";
+import { resolvePublicAssetUrl } from "../lib/assets";
 import type {
   EmbeddedPdfSource,
   ExtractedCourseDocument,
@@ -15,6 +16,20 @@ interface PdfItem {
   str: string;
   transform: number[];
 }
+
+const emptyDebug = {
+  repeatedLineCandidates: [],
+  droppedLineCount: 0,
+  sectionCount: 0,
+  lessonCount: 0,
+  lowTextDensity: true,
+  fallbackApplied: false,
+  pageTypeClassification: [],
+  vietnameseCandidateLines: [],
+  attachedTranslationLines: [],
+  excludedNoiseLines: [],
+  finalLearningCards: []
+};
 
 const buildUnsupportedDocument = (
   source: EmbeddedPdfSource,
@@ -30,21 +45,14 @@ const buildUnsupportedDocument = (
   cards: [],
   warnings: [],
   errorMessage: message,
-  debug: {
-    repeatedLineCandidates: [],
-    droppedLineCount: 0,
-    sectionCount: 0,
-    lessonCount: 0,
-    lowTextDensity: true,
-    fallbackApplied: false
-  }
+  debug: { ...emptyDebug }
 });
 
 export const extractEmbeddedPdf = async (
   source: EmbeddedPdfSource
 ): Promise<ExtractedCourseDocument> => {
   try {
-    const documentUrl = new URL(source.pdfPath, window.location.href).toString();
+    const documentUrl = resolvePublicAssetUrl(source.pdfPath);
     const task = getDocument({ url: documentUrl });
     const pdf = await task.promise;
     const pages: ExtractedPage[] = [];
@@ -79,7 +87,8 @@ export const extractEmbeddedPdf = async (
     const { pages: cleanedPages, repeatedLineCandidates, droppedLineCount } = cleanExtractedPages(pages);
     const sections = buildSectionsFromPages(cleanedPages);
     const lessons = buildLessonDrafts(sections);
-    const cards = buildLearningCards(lessons);
+    const cardBuild = buildLearningCards({ pages: cleanedPages, courseId: source.courseId, lessons });
+    const cards = cardBuild.cards;
     const warnings: string[] = [];
     const totalTextLength = cleanedPages.reduce((sum, page) => sum + page.cleanedText.length, 0);
     const lowTextDensity = totalTextLength < 120 || cleanedPages.every((page) => page.cleanedText.length < 40);
@@ -90,52 +99,12 @@ export const extractEmbeddedPdf = async (
 
     if (cards.length === 0) {
       warnings.push("학습 카드 생성량이 적어 fallback 카드로 대체했습니다.");
-      const fallbackCards = cleanedPages
-        .flatMap((page) =>
-          page.cleanedText
-            .split(/\n/g)
-            .map((line) => line.trim())
-            .filter((line) => line.length >= 3)
-            .slice(0, 3)
-            .map((line, index) => ({
-              id: `fallback-${page.pageNumber}-${index + 1}`,
-              type: "note" as const,
-              front: line,
-              difficultyEstimate: 2 as const,
-              sourceText: line,
-              sourcePageNumber: page.pageNumber,
-              lessonDraftId: lessons[0]?.id ?? "lesson-draft-fallback"
-            }))
-        )
-        .slice(0, 12);
-
-      return {
-        courseId: source.courseId,
-        source,
-        status: fallbackCards.length > 0 ? "ready" : "failed",
-        extractedAt: new Date().toISOString(),
-        pageCount: cleanedPages.length,
-        pages: cleanedPages,
-        sections,
-        lessons,
-        cards: fallbackCards,
-        warnings,
-        errorMessage: fallbackCards.length > 0 ? undefined : "텍스트를 충분히 추출하지 못했습니다.",
-        debug: {
-          repeatedLineCandidates,
-          droppedLineCount,
-          sectionCount: sections.length,
-          lessonCount: lessons.length,
-          lowTextDensity,
-          fallbackApplied: true
-        }
-      };
     }
 
     return {
       courseId: source.courseId,
       source,
-      status: "ready",
+      status: cards.length > 0 ? "ready" : "failed",
       extractedAt: new Date().toISOString(),
       pageCount: cleanedPages.length,
       pages: cleanedPages,
@@ -143,13 +112,19 @@ export const extractEmbeddedPdf = async (
       lessons,
       cards,
       warnings,
+      errorMessage: cards.length > 0 ? undefined : "텍스트를 충분히 추출하지 못했습니다.",
       debug: {
         repeatedLineCandidates,
         droppedLineCount,
         sectionCount: sections.length,
         lessonCount: lessons.length,
         lowTextDensity,
-        fallbackApplied: false
+        fallbackApplied: cards.length === 0,
+        pageTypeClassification: cardBuild.pageTypeClassification,
+        vietnameseCandidateLines: cardBuild.vietnameseCandidateLines,
+        attachedTranslationLines: cardBuild.attachedTranslationLines,
+        excludedNoiseLines: cardBuild.excludedNoiseLines,
+        finalLearningCards: cardBuild.finalLearningCards
       }
     };
   } catch (error) {
@@ -170,14 +145,7 @@ export const extractEmbeddedPdf = async (
       cards: [],
       warnings: [],
       errorMessage: message,
-      debug: {
-        repeatedLineCandidates: [],
-        droppedLineCount: 0,
-        sectionCount: 0,
-        lessonCount: 0,
-        lowTextDensity: true,
-        fallbackApplied: false
-      }
+      debug: { ...emptyDebug }
     };
   }
 };
