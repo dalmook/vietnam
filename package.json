@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:pages": "npm run build && cp dist/index.html dist/404.html",
+    "preview:pages": "npm run build:pages && vite preview --host"
   },
   "dependencies": {
     "idb": "^8.0.2",
