@@ -1,5 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
-import { AppShell } from "./components/AppShell";
+import { Route, Routes } from "react-router-dom";
 import { CourseDetailPage } from "./pages/CourseDetailPage";
 import { ExtractionDebugPage } from "./pages/ExtractionDebugPage";
 import { HomePage } from "./pages/HomePage";
@@ -8,44 +7,17 @@ import { LessonPage } from "./pages/LessonPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <AppShell />,
-      children: [
-        {
-          index: true,
-          element: <HomePage />
-        },
-        {
-          path: "review",
-          element: <ReviewPage />
-        },
-        {
-          path: "library",
-          element: <LibraryPage />
-        },
-        {
-          path: "settings",
-          element: <SettingsPage />
-        },
-        {
-          path: "course/:courseId",
-          element: <CourseDetailPage />
-        },
-        {
-          path: "course/:courseId/lesson/:lessonId",
-          element: <LessonPage />
-        },
-        {
-          path: "debug/extract",
-          element: <ExtractionDebugPage />
-        }
-      ]
-    }
-  ],
-  {
-    basename: import.meta.env.BASE_URL
-  }
-);
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/library" element={<LibraryPage />} />
+      <Route path="/review" element={<ReviewPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/course/:courseId" element={<CourseDetailPage />} />
+      <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />
+      <Route path="/debug/extract" element={<ExtractionDebugPage />} />
+      <Route path="*" element={<HomePage />} />
+    </Routes>
+  );
+}

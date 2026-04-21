@@ -1,31 +1,31 @@
 import { Link } from "react-router-dom";
+import { BuildInfoCard } from "../components/BuildInfoCard";
 import { CourseCard } from "../components/CourseCard";
+import { FeaturePanelBoundary } from "../components/FeaturePanelBoundary";
+import { SafeLoader } from "../components/SafeLoader";
+import { BUILD_TIMESTAMP, getLocationSnapshot } from "../lib/buildInfo";
 import { useCourseLibrary } from "../hooks/useCourseLibrary";
 
-export function HomePage() {
+function CourseFeaturePanel() {
   const { isReady, error, continueCourse, continueLessonId, recentCourses, recommendedCourses, courses, completedCount, totalCount, rewards } =
     useCourseLibrary();
-
-  if (!isReady) {
-    return (
-      <section className="rounded-[28px] bg-white p-6 text-center shadow-soft">
-        <p className="text-lg font-semibold text-ink">홈 화면을 준비하고 있습니다.</p>
-      </section>
-    );
-  }
 
   const previewCourses = courses.slice(0, 4);
 
   return (
-    <div className="space-y-5">
+    <SafeLoader
+      isReady={isReady}
+      error={error}
+      loadingText="코스 데이터를 준비하고 있습니다."
+      errorTitle="일부 기능을 불러오지 못했습니다"
+      errorDescription="IndexedDB 또는 학습 데이터 복구 실패가 발생했습니다. 상단 진단 카드는 계속 표시됩니다."
+    >
       <section className="rounded-[30px] bg-white p-5 shadow-soft">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Continue</p>
             <h2 className="display-font mt-2 text-3xl font-bold leading-tight text-ink">앱을 다시 켜도 이어집니다</h2>
-            <p className="mt-3 text-sm leading-6 text-ink/68">
-              마지막으로 학습한 코스와 최근 진행 상태를 로컬에 저장해 두었습니다.
-            </p>
+            <p className="mt-3 text-sm leading-6 text-ink/68">마지막 학습 상태를 로컬 저장소에서 복구합니다.</p>
           </div>
           <div className="rounded-[22px] bg-shell px-4 py-3 text-center">
             <p className="text-xs font-medium text-ink/45">XP / streak</p>
@@ -47,10 +47,7 @@ export function HomePage() {
               >
                 이어하기
               </Link>
-              <Link
-                to="/review"
-                className="rounded-2xl bg-sand px-4 py-4 text-center text-base font-semibold text-ink"
-              >
+              <Link to="/review" className="rounded-2xl bg-sand px-4 py-4 text-center text-base font-semibold text-ink">
                 복습 보기
               </Link>
             </div>
@@ -66,9 +63,7 @@ export function HomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Recent</p>
             <h2 className="display-font mt-1 text-2xl font-bold text-ink">최근 학습</h2>
           </div>
-          <div className="rounded-full bg-shell px-3 py-1 text-xs font-semibold text-ink/60">
-            완료 {completedCount}/{totalCount}
-          </div>
+          <div className="rounded-full bg-shell px-3 py-1 text-xs font-semibold text-ink/60">완료 {completedCount}/{totalCount}</div>
         </div>
 
         <div className="mt-4 space-y-3">
@@ -110,12 +105,8 @@ export function HomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ocean">Preview</p>
             <h2 className="display-font mt-1 text-2xl font-bold text-ink">전체 코스 미리보기</h2>
           </div>
-          <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-ink/60">
-            27 Courses
-          </span>
+          <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-ink/60">27 Courses</span>
         </div>
-
-        {error && <p className="mt-3 text-sm text-coral">{error}</p>}
 
         <div className="mt-4 grid gap-3">
           {previewCourses.map((course) => (
@@ -125,6 +116,39 @@ export function HomePage() {
           ))}
         </div>
       </section>
+    </SafeLoader>
+  );
+}
+
+export function HomePage() {
+  const location = getLocationSnapshot();
+
+  return (
+    <div className="space-y-5">
+      <section className="rounded-[24px] border border-mint/35 bg-mint/10 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ocean">Home Static Card</p>
+        <h2 className="mt-2 text-lg font-bold text-ink">Vietnam Flow</h2>
+        <p className="mt-1 text-sm font-semibold text-ink">GitHub Pages 진단 모드 · 앱이 실행 중입니다</p>
+        <ul className="mt-2 space-y-1 text-xs text-ink/75">
+          <li>현재 경로: {location.pathname}</li>
+          <li>현재 해시: {location.hash || "(empty)"}</li>
+          <li>빌드 시간: {BUILD_TIMESTAMP}</li>
+        </ul>
+        <div className="mt-3 flex gap-2">
+          <Link to="/library" className="inline-flex rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white">
+            라이브러리 이동
+          </Link>
+          <Link to="/review" className="inline-flex rounded-xl bg-sand px-3 py-2 text-xs font-semibold text-ink">
+            복습 이동
+          </Link>
+        </div>
+      </section>
+
+      <BuildInfoCard />
+
+      <FeaturePanelBoundary>
+        <CourseFeaturePanel />
+      </FeaturePanelBoundary>
     </div>
   );
 }

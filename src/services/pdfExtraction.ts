@@ -2,6 +2,7 @@ import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { buildLearningCards, buildLessonDrafts, buildSectionsFromPages } from "../lib/cardSegmentation";
 import { cleanExtractedPages } from "../lib/textCleanup";
+import { resolvePublicAssetUrl } from "../lib/assets";
 import type {
   EmbeddedPdfSource,
   ExtractedCourseDocument,
@@ -44,7 +45,7 @@ export const extractEmbeddedPdf = async (
   source: EmbeddedPdfSource
 ): Promise<ExtractedCourseDocument> => {
   try {
-    const documentUrl = new URL(source.pdfPath, window.location.href).toString();
+    const documentUrl = resolvePublicAssetUrl(source.pdfPath);
     const task = getDocument({ url: documentUrl });
     const pdf = await task.promise;
     const pages: ExtractedPage[] = [];
