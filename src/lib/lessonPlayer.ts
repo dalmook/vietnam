@@ -24,7 +24,7 @@ export const getStepLabel = (step: LessonPlayerStep) => {
 };
 
 export const buildMeaningText = (card: LearningCard) =>
-  card.back ?? card.hint ?? card.sourceText ?? "이 카드의 뜻과 쓰임을 확인해 보세요.";
+  card.koreanMeaning ?? card.back ?? card.hint ?? card.sourceText ?? "이 카드의 뜻과 쓰임을 확인해 보세요.";
 
 export const calculateStepProgress = (
   currentCardIndex: number,

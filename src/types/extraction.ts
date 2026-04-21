@@ -12,6 +12,14 @@ export type LearningCardType =
   | "dialogue"
   | "note";
 
+export type ExtractedPageType =
+  | "cover"
+  | "dialogue"
+  | "grammar_vocab"
+  | "grammar_usage"
+  | "culture_note"
+  | "unknown";
+
 export interface EmbeddedPdfSource {
   courseId: string;
   title: string;
@@ -31,6 +39,8 @@ export interface ExtractedPage {
   cleanedText: string;
   lines: ExtractedPageLine[];
   textDensity: number;
+  pageType?: ExtractedPageType;
+  pageTypeReason?: string;
 }
 
 export interface ParsedSection {
@@ -50,6 +60,12 @@ export interface LessonDraft {
   rawSegments: string[];
 }
 
+export interface DialogueTurn {
+  speaker: string;
+  vietnamese: string;
+  koreanMeaning?: string;
+}
+
 export interface LearningCard {
   id: string;
   type: LearningCardType;
@@ -60,6 +76,23 @@ export interface LearningCard {
   sourceText: string;
   sourcePageNumber: number;
   lessonDraftId: string;
+  vietnamese: string;
+  koreanMeaning?: string;
+  explanation?: string;
+  sourcePage: number;
+  sourceCourseId: string;
+  lessonId: string;
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  tags: string[];
+  audioText: string;
+  hiddenByDefaultFields: Array<"koreanMeaning" | "explanation">;
+  turns?: DialogueTurn[];
+}
+
+export interface DebugLineWithReason {
+  line: string;
+  reason: string;
+  pageNumber: number;
 }
 
 export interface ExtractionDebugInfo {
@@ -69,6 +102,11 @@ export interface ExtractionDebugInfo {
   lessonCount: number;
   lowTextDensity: boolean;
   fallbackApplied: boolean;
+  pageTypeClassification: Array<{ pageNumber: number; pageType: ExtractedPageType; reason: string }>;
+  vietnameseCandidateLines: DebugLineWithReason[];
+  attachedTranslationLines: DebugLineWithReason[];
+  excludedNoiseLines: DebugLineWithReason[];
+  finalLearningCards: Array<{ id: string; type: LearningCardType; reason: string; pageNumber: number }>;
 }
 
 export interface ExtractedCourseDocument {
